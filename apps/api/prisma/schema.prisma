@@ -6,32 +6,68 @@ datasource db {
   provider = "sqlite"
 }
 
+enum UserRole {
+  PARENT
+  KID
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
+  role      UserRole @default(KID)
+  active    Boolean  @default(true)
+
   createdAt DateTime @default(now())
-  chores    ChoreAssignment[]
+  updatedAt DateTime @updatedAt
+
+  completions ChoreCompletion[]
+
+  @@index([active])
 }
 
 model Chore {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   title     String
-  points    Int      @default(1)
-  active    Boolean  @default(true)
+  points    Int     @default(0)
+  active    Boolean @default(true)
+
   createdAt DateTime @default(now())
-  assigns   ChoreAssignment[]
+  updatedAt DateTime @updatedAt
+
+  completions ChoreCompletion[]
+
+  @@index([active])
 }
 
-model ChoreAssignment {
-  id        String   @id @default(cuid())
-  userId    String
-  choreId   String
-  dueDate   DateTime
-  completed Boolean  @default(false)
+model ChoreCompletion {
+  id          String   @id @default(cuid())
 
-  user User  @relation(fields: [userId], references: [id])
-  chore Chore @relation(fields: [choreId], references: [id])
+  userId      String
+  choreId     String
 
-  @@index([dueDate])
-  @@unique([userId, choreId, dueDate])
+  // when the chore was actually done (drives calendar + reporting)
+  completedAt DateTime
+
+  // optional but handy for auditing / “who logged it”
+  createdAt   DateTime @default(now())
+
+  notes       String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  chore Chore @relation(fields: [choreId], references: [id], onDelete: Restrict)
+
+  @@index([completedAt])
+  @@index([userId, completedAt])
+}
+
+model Reward {
+  id         String  @id @default(cuid())
+  title      String
+  costPoints Int
+  active     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
 }
