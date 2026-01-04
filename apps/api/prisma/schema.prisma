@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  chores    ChoreAssignment[]
+}
+
+model Chore {
+  id        String   @id @default(cuid())
+  title     String
+  points    Int      @default(1)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  assigns   ChoreAssignment[]
+}
+
+model ChoreAssignment {
+  id        String   @id @default(cuid())
+  userId    String
+  choreId   String
+  dueDate   DateTime
+  completed Boolean  @default(false)
+
+  user User  @relation(fields: [userId], references: [id])
+  chore Chore @relation(fields: [choreId], references: [id])
+
+  @@index([dueDate])
+  @@unique([userId, choreId, dueDate])
+}

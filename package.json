@@ -1,0 +1,10 @@
+{
+  "name": "chore-chart",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "npm -w apps/api run dev & npm -w apps/web run dev",
+    "dev:web": "npm -w apps/web run dev",
+    "dev:api": "npm -w apps/api run dev"
+  }
+}

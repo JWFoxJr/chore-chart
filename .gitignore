@@ -1,0 +1,59 @@
+# -----------------------------
+# Dependencies
+# -----------------------------
+node_modules/
+
+# -----------------------------
+# Build output
+# -----------------------------
+dist/
+build/
+.vite/
+out/
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+logs/
+
+# -----------------------------
+# Env / secrets
+# -----------------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------------
+# Databases (SQLite)
+# -----------------------------
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# -----------------------------
+# TypeScript
+# -----------------------------
+*.tsbuildinfo
+
+# -----------------------------
+# Coverage
+# -----------------------------
+coverage/
+.nyc_output/
+
+# -----------------------------
+# OS / Editor
+# -----------------------------
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.swo
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
