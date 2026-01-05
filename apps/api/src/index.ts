@@ -1,27 +1,16 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-
-import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import Database from "better-sqlite3";
-
-// SQLite DB file location (relative to apps/api)
-const sqlite = new Database("dev.db");
-
-// Prisma 7 uses an adapter for direct DB connections
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
-});
-
-const prisma = new PrismaClient({ adapter });
+import { prisma } from "./db/prisma.js";
+import { healthRouter } from "./routes/health.js";
 
 const app = express();
 
 app.use(cors({ origin: ["http://localhost:5173"] }));
 app.use(express.json());
+app.use(healthRouter);
 
-app.get("/health", (_req, res) => res.json({ ok: true }));
+//app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // Create a user
 app.post("/api/users", async (req, res) => {
@@ -58,6 +47,19 @@ app.post("/api/chores", async (req, res) => {
 app.get("/api/chores", async (_req, res) => {
   const chores = await prisma.chore.findMany({ orderBy: { createdAt: "asc" } });
   res.json(chores);
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
+});
+
+app.get("/health/db", async (_req, res, next) => {
+  try {
+    const users = await prisma.user.count();
+    res.json({ db: "ok", users });
+  } catch (err) {
+    next(err);
+  }
 });
 
 const port = process.env.PORT ? Number(process.env.PORT) : 8787;
