@@ -4,6 +4,7 @@ import cors from "cors";
 import { prisma } from "./db/prisma.js";
 import { healthRouter } from "./routes/health.js";
 import { usersRouter } from "./routes/users.js";
+import { choresRouter } from "./routes/chores.js";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 // routes
 app.use(healthRouter);
 app.use(usersRouter);
+app.use(choresRouter);
 
 app.get("/health/db", async (_req, res, next) => {
   try {
