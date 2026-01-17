@@ -5,6 +5,7 @@ import { prisma } from "./db/prisma.js";
 import { healthRouter } from "./routes/health.js";
 import { usersRouter } from "./routes/users.js";
 import { choresRouter } from "./routes/chores.js";
+import { completionsRouter } from "./routes/completions.js";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(healthRouter);
 app.use(usersRouter);
 app.use(choresRouter);
+app.use(completionsRouter);
 
 app.get("/health/db", async (_req, res, next) => {
   try {
@@ -25,13 +27,22 @@ app.get("/health/db", async (_req, res, next) => {
   }
 });
 
-app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err);
-  res.status(500).json({ error: "Internal Server Error" });
-});
+app.use(
+  (
+    err: unknown,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  },
+);
 
-const port= process.env.PORT ? Number(process.env.PORT) : 8787;
-app.listen(port, () => console.log(`API listening on http://localhost:${port}`));
+const port = process.env.PORT ? Number(process.env.PORT) : 8787;
+app.listen(port, () =>
+  console.log(`API listening on http://localhost:${port}`),
+);
 
 // Create a user
 app.post("/api/users", async (req, res) => {
