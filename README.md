@@ -25,9 +25,9 @@ This project is also a learning exercise in:
 ```bash
 /
 ├── apps/
-│ ├── web/ # React + Vite frontend
-│ ├── api/ # Node + TS API server
-│ └── prisma/ # Prisma schema, migrations, seed
+│   ├── web/        # React + Vite frontend
+│   └── api/        # Node + TS API server
+│       └── prisma/ # Prisma schema, migrations, seed
 ├── package.json
 └── README.md
 ```
@@ -37,130 +37,128 @@ This project is also a learning exercise in:
 ### 🚀 Getting Started
 
 **Prerequisites**
-- Node 18+ (or whatever you're standardizing on)
-- npm or pnpm
 - Git
+- fnm, initialised in your shell
+- Node and npm: use the Node version recorded in `.nvmrc`
 
-**1. Install dependencies**
+Run the following commands from the repository root.
 
-From the repo root:
+**1. Select Node and install dependencies**
 
-```bash
-npm install
+```sh
+fnm install
+fnm use
+npm ci
 ```
 
----
-**2. Environment setup**
+Use `npm ci` for an existing checkout. Keep `package-lock.json` tracked;
+do not delete it to resolve installation errors.
 
-Create `.env` in the repo root (or in `apps/api` if scoped there):
+**2. Configure the environment**
 
-`DATABASE_URL="file:./dev.db"`
+For a fresh checkout:
 
-
-> `.env` is gitignored — use `.env.example` as the template.
-
----
-**3. Initialize the database**
-
-From the repo root:
-
-```bash
-npx prisma migrate dev
-npx prisma db seed
+```sh
+cp apps/api/.env.example apps/api/.env
 ```
 
-Or using scripts if defined:
+Do not overwrite an existing environment file. The example configures a
+local SQLite development database. Environment files and databases are
+not committed to Git.
 
-```bash
-npm run db:migrate
-npm run db:seed
+**3. Prepare the database**
+
+```sh
+npm run setup
 ```
 
-This will:
-- Create dev.db (SQLite)
-- Apply migrations
-- Seed with sample users, chores, and completions
+This generates Prisma Client and applies committed migrations.
+It does not reset the database or insert sample data.
+It can be run again when the database is already prepared.
 
----
-**4. Run the API**
+For an existing server, configure the intended database and arrange a
+backup before applying migrations.
 
-`npm run dev:api`
+**4. Start development**
 
-or (depending on setup):
-
-```bash
-cd apps/api
+```sh
 npm run dev
 ```
 
-API should be available at:
+Default addresses:
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:8787`
 
-`http://localhost:3001   # or your configured port`
+In another terminal, verify database connectivity:
 
-Health check:
-
-`GET /health/db`
-
----
-**5. Run the frontend**
-
-In another terminal:
-
-`npm run dev:web`
-
-or:
-
-```bash
-cd apps/web
-npm run dev
+```sh
+curl http://localhost:8787/health/db
 ```
 
-Frontend should be at:
+A fresh database should return `{"db":"ok","users":0}`.
 
-`http://localhost:5173`
+**Optional sample data — destructive**
+
+The seed script deletes existing application records before inserting
+sample data. Run it only against a disposable development database:
+
+```sh
+npm -w apps/api run prisma:seed
+```
+
+Seeding is intentionally not part of setup.
 
 ---
 ### 🧬 Prisma
 
-**Schema Location**
+Paths relative to the repository root:
 
-`/prisma/schema.prisma`
+- Schema: `apps/api/prisma/schema.prisma`
+- Configuration: `apps/api/prisma.config.ts`
+- Migrations: `apps/api/prisma/migrations/`
+- Seed script: `apps/api/prisma/seed.ts`
 
-**Migrations**
+Run these commands from the repository root:
 
-Located in:
+```sh
+# Generate Prisma Client
+npm run db:generate
 
-`/prisma/migrations/`
+# Apply committed migrations
+npm run db:deploy
 
-**Common Commands**
-
-```bash
-# Create a new migration after schema changes
-npx prisma migrate dev --name your_migration_name
-
-# Reset DB (DANGER: deletes all data)
-npx prisma migrate reset
-
-# Seed database
-npx prisma db seed
+# Create and apply a new migration during development
+npm -w apps/api run prisma:migrate -- --name your_migration_name
 
 # Open Prisma Studio
-npx prisma studio
+npm -w apps/api run prisma:studio
+```
+
+Use `db:deploy` when preparing a checkout or deploying committed migrations.
+Use `prisma:migrate` when developing a schema change.
+
+After changing the schema, regenerate Prisma Client:
+
+```sh
+npm run db:generate
 ```
 
 ---
+
 ### 🌱 Seeding
 
-Seed script lives in:
+The seed script creates default users, sample chores, completions, and rewards.
 
-`/prisma/seed.ts`
+**Warning: it deletes existing application records first.**
+Use it only against a disposable development database.
 
-It creates:
-- Default users (Mom, Dad, Son, Daughter)
-- Sample chores with point values
-- Sample completions for calendar/testing
+```sh
+npm -w apps/api run prisma:seed
+```
 
-Update seed data when schema changes so dev environments remain reproducible.
+Seeding is optional and is not included in `npm run setup`.
+
+Update the seed script when schema changes require it.
 
 ---
 ### 🧭 Development Workflow

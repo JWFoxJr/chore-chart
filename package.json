@@ -1,10 +1,33 @@
 {
   "name": "chore-chart",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=24.22.3 <25.0.0"
+  },
   "scripts": {
     "dev": "npm -w apps/api run dev & npm -w apps/web run dev",
     "dev:web": "npm -w apps/web run dev",
-    "dev:api": "npm -w apps/api run dev"
+    "dev:api": "npm -w apps/api run dev",
+    "db:generate": "npm -w apps/api run prisma:generate",
+    "db:deploy": "npm -w apps/api exec -- prisma migrate deploy --config=./prisma.config.ts",
+    "setup": "npm run db:generate && npm run db:deploy"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.6.2": true,
+    "esbuild@0.27.2": true,
+    "fsevents@2.3.3": true,
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true
+  },
+  "overrides": {
+  "@typescript-eslint/typescript-estree": {
+    "minimatch": "11.0.1"
+    }
+  },
+  "devDependencies": {
+    "prisma": "7.10.1"
   }
 }

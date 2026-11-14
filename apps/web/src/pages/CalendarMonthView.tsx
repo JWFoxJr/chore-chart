@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type SummaryDay = { date: string; count: number };
 type SummaryResponse = { from: string; to: string; days: SummaryDay[] };
@@ -106,8 +106,8 @@ export default function CalendarMonthView() {
           setCountsByDate(map);
           setMaxCount(max);
         }
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? "Failed to load summary");
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load summary");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -143,8 +143,8 @@ export default function CalendarMonthView() {
       if (!res.ok) throw new Error(await res.text());
       const data = (await res.json()) as Completion[];
       setDayCompletions(data);
-    } catch (e: any) {
-      setDayError(e?.message ?? "Failed to load day details");
+    } catch (e: unknown) {
+      setDayError(e instanceof Error ? e.message : "Failed to load day details");
     } finally {
       setDayLoading(false);
     }

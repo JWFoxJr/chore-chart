@@ -11,12 +11,13 @@
     "prisma:studio": "prisma studio --config=./prisma.config.ts"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.2.0",
-    "@prisma/client": "^7.2.0",
+    "@prisma/adapter-better-sqlite3": "7.10.1",
+    "@prisma/client": "7.10.1",
     "better-sqlite3": "^12.5.0",
     "cors": "^2.8.5",
+    "dotenv": "^18.0.10",
     "express": "^4.19.2",
-    "prisma": "^7.2.0"
+    "prisma": "7.10.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
