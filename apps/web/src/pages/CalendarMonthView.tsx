@@ -42,7 +42,7 @@ type Completion = {
   id: string;
   completedAt: string;
   user: { id: string; name: string };
-  chore: { id: string; title: string; pointValue: number };
+  chore: { id: string; title: string; points: number };
 };
 
 function clamp(n: number, min: number, max: number) {
@@ -335,7 +335,7 @@ export default function CalendarMonthView() {
                         >
                           <div style={{ fontWeight: 800 }}>{c.chore.title}</div>
                           <div style={{ opacity: 0.7, fontSize: 13 }}>
-                            {c.chore.pointValue} pts
+                            {c.chore.points} pts
                           </div>
                           <div
                             style={{
