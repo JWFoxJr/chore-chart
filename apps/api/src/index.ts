@@ -6,6 +6,7 @@ import { healthRouter } from "./routes/health.js";
 import { usersRouter } from "./routes/users.js";
 import { choresRouter } from "./routes/chores.js";
 import { completionsRouter } from "./routes/completions.js";
+import { reportsRouter } from "./routes/reports.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(healthRouter);
 app.use(usersRouter);
 app.use(choresRouter);
 app.use(completionsRouter);
+app.use(reportsRouter);
 
 // Optional DB health check (keep this for now)
 app.get("/health/db", async (_req, res, next) => {

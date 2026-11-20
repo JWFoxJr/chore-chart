@@ -12,10 +12,10 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  role      UserRole @default(KID)
-  active    Boolean  @default(true)
+  id     String   @id @default(cuid())
+  name   String
+  role   UserRole @default(KID)
+  active Boolean  @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -26,10 +26,10 @@ model User {
 }
 
 model Chore {
-  id        String  @id @default(cuid())
-  title     String
-  points    Int     @default(0)
-  active    Boolean @default(true)
+  id     String  @id @default(cuid())
+  title  String
+  points Int     @default(0)
+  active Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,20 +40,21 @@ model Chore {
 }
 
 model ChoreCompletion {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId      String
-  choreId     String
+  userId        String
+  choreId       String
+  pointsAwarded Int
 
   // when the chore was actually done (drives calendar + reporting)
   completedAt DateTime
 
   // optional but handy for auditing / “who logged it”
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  notes       String?
+  notes String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
   chore Chore @relation(fields: [choreId], references: [id], onDelete: Restrict)
 
   @@index([completedAt])

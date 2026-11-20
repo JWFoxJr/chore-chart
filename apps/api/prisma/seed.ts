@@ -11,10 +11,18 @@ async function main() {
   await prisma.user.deleteMany();
 
   const [mom, dad, son, daughter] = await Promise.all([
-    prisma.user.create({ data: { name: "Mom", role: UserRole.PARENT, active: true } }),
-    prisma.user.create({ data: { name: "Dad", role: UserRole.PARENT, active: true } }),
-    prisma.user.create({ data: { name: "Son", role: UserRole.KID, active: true } }),
-    prisma.user.create({ data: { name: "Daughter", role: UserRole.KID, active: true } }),
+    prisma.user.create({
+      data: { name: "Mom", role: UserRole.PARENT, active: true },
+    }),
+    prisma.user.create({
+      data: { name: "Dad", role: UserRole.PARENT, active: true },
+    }),
+    prisma.user.create({
+      data: { name: "Son", role: UserRole.KID, active: true },
+    }),
+    prisma.user.create({
+      data: { name: "Daughter", role: UserRole.KID, active: true },
+    }),
   ]);
 
   const chores = await prisma.chore.createMany({
@@ -46,18 +54,58 @@ async function main() {
   await prisma.choreCompletion.createMany({
     data: [
       // two days ago
-      { userId: son.id, choreId: byTitle("Make bed").id, completedAt: day(-2) },
-      { userId: son.id, choreId: byTitle("Take out trash").id, completedAt: day(-2) },
-      { userId: daughter.id, choreId: byTitle("Feed pets").id, completedAt: day(-2) },
+      {
+        userId: son.id,
+        choreId: byTitle("Make bed").id,
+        pointsAwarded: byTitle("Make bed").points,
+        completedAt: day(-2),
+      },
+      {
+        userId: son.id,
+        choreId: byTitle("Take out trash").id,
+        pointsAwarded: byTitle("Take out trash").points,
+        completedAt: day(-2),
+      },
+      {
+        userId: daughter.id,
+        choreId: byTitle("Feed pets").id,
+        pointsAwarded: byTitle("Feed pets").points,
+        completedAt: day(-2),
+      },
 
       // yesterday
-      { userId: daughter.id, choreId: byTitle("Make bed").id, completedAt: day(-1) },
-      { userId: daughter.id, choreId: byTitle("Unload dishwasher").id, completedAt: day(-1) },
-      { userId: son.id, choreId: byTitle("Load dishwasher").id, completedAt: day(-1) },
+      {
+        userId: daughter.id,
+        choreId: byTitle("Make bed").id,
+        pointsAwarded: byTitle("Make bed").points,
+        completedAt: day(-1),
+      },
+      {
+        userId: daughter.id,
+        choreId: byTitle("Unload dishwasher").id,
+        pointsAwarded: byTitle("Unload dishwasher").points,
+        completedAt: day(-1),
+      },
+      {
+        userId: son.id,
+        choreId: byTitle("Load dishwasher").id,
+        pointsAwarded: byTitle("Load dishwasher").points,
+        completedAt: day(-1),
+      },
 
       // today
-      { userId: son.id, choreId: byTitle("Put laundry in hamper").id, completedAt: day(0) },
-      { userId: daughter.id, choreId: byTitle("Clean bedroom").id, completedAt: day(0) },
+      {
+        userId: son.id,
+        choreId: byTitle("Put laundry in hamper").id,
+        pointsAwarded: byTitle("Put laundry in hamper").points,
+        completedAt: day(0),
+      },
+      {
+        userId: daughter.id,
+        choreId: byTitle("Clean bedroom").id,
+        pointsAwarded: byTitle("Clean bedroom").points,
+        completedAt: day(0),
+      },
     ],
   });
 
@@ -65,7 +113,11 @@ async function main() {
     data: [
       { title: "30 min extra screen time", costPoints: 10, active: true },
       { title: "Pick dessert", costPoints: 15, active: true },
-      { title: "Small toy / Roblox bucks / etc.", costPoints: 30, active: true },
+      {
+        title: "Small toy / Roblox bucks / etc.",
+        costPoints: 30,
+        active: true,
+      },
     ],
   });
 

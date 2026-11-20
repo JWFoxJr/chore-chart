@@ -160,10 +160,19 @@ completionsRouter.post("/completions", async (req, res, next) => {
       when = parsed;
     }
 
+    const chore = await prisma.chore.findUnique({
+      where: { id: choreId.trim() },
+    });
+
+    if (!chore) {
+      return res.status(404).json({ error: "Chore not found" });
+    }
+
     const completion = await prisma.choreCompletion.create({
       data: {
         userId: userId.trim(),
         choreId: choreId.trim(),
+        pointsAwarded: chore.points,
         completedAt: when,
       },
       include: { user: true, chore: true },

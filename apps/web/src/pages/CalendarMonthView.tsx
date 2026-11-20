@@ -41,6 +41,7 @@ function monthLabel(d: Date) {
 type Completion = {
   id: string;
   completedAt: string;
+  pointsAwarded: number;
   user: { id: string; name: string };
   chore: { id: string; title: string; points: number };
 };
@@ -107,7 +108,8 @@ export default function CalendarMonthView() {
           setMaxCount(max);
         }
       } catch (e: unknown) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load summary");
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : "Failed to load summary");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -144,7 +146,9 @@ export default function CalendarMonthView() {
       const data = (await res.json()) as Completion[];
       setDayCompletions(data);
     } catch (e: unknown) {
-      setDayError(e instanceof Error ? e.message : "Failed to load day details");
+      setDayError(
+        e instanceof Error ? e.message : "Failed to load day details",
+      );
     } finally {
       setDayLoading(false);
     }
@@ -335,7 +339,7 @@ export default function CalendarMonthView() {
                         >
                           <div style={{ fontWeight: 800 }}>{c.chore.title}</div>
                           <div style={{ opacity: 0.7, fontSize: 13 }}>
-                            {c.chore.points} pts
+                            {c.pointsAwarded} pts
                           </div>
                           <div
                             style={{
