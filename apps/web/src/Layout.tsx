@@ -48,6 +48,9 @@ export default function Layout() {
             <NavLink to="/calendar" style={linkStyle}>
               Calendar
             </NavLink>
+            <NavLink to="/reports/points" style={linkStyle}>
+              Points Report
+            </NavLink>
           </nav>
         </aside>
 
