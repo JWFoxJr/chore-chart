@@ -4,6 +4,7 @@ import Layout from "./Layout";
 import Home from "./pages/Home";
 import CalendarMonthView from "./pages/CalendarMonthView";
 import PointsReportPage from "./pages/PointsReportPage";
+import WeeklyTrendsPage from "./pages/WeeklyTrendsPage";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/calendar" element={<CalendarMonthView />} />
           <Route path="/reports/points" element={<PointsReportPage />} />
+          <Route path="/reports/trends" element={<WeeklyTrendsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

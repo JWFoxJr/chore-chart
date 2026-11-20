@@ -51,6 +51,9 @@ export default function Layout() {
             <NavLink to="/reports/points" style={linkStyle}>
               Points Report
             </NavLink>
+            <NavLink to="/reports/trends" style={linkStyle}>
+              Weekly Trends
+            </NavLink>
           </nav>
         </aside>
 
