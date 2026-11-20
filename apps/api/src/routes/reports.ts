@@ -15,6 +15,36 @@ function isValidDate(value: string) {
   );
 }
 
+function startOfWeek(value: Date) {
+  const start = new Date(value);
+
+  start.setHours(0, 0, 0, 0);
+
+  const daysSinceSunday = start.getDay();
+
+  start.setDate(start.getDate() - daysSinceSunday);
+
+  return start;
+}
+
+function subtractMonths(value: Date, months: number) {
+  const result = new Date(value);
+  const originalDay = result.getDate();
+
+  result.setDate(1);
+  result.setMonth(result.getMonth() - months);
+
+  const lastDay = new Date(
+    result.getFullYear(),
+    result.getMonth() + 1,
+    0,
+  ).getDate();
+
+  result.setDate(Math.min(originalDay, lastDay));
+
+  return result;
+}
+
 reportsRouter.get("/reports/points", async (req, res, next) => {
   try {
     const from = req.query.from;
@@ -87,6 +117,131 @@ reportsRouter.get("/reports/points", async (req, res, next) => {
     }
 
     res.json(report);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get("/reports/trends", async (req, res, next) => {
+  const interval = req.query.interval;
+  const metric = req.query.metric;
+  const range = req.query.range ?? "3M";
+
+  if (interval !== "week") {
+    return res.status(400).json({
+      error: "interval must be week",
+    });
+  }
+
+  if (metric !== "points" && metric !== "count") {
+    return res.status(400).json({
+      error: "metric must be points or count",
+    });
+  }
+
+  const allowedRanges = ["1W", "1M", "3M", "6M", "12M", "ALL"];
+
+  if (typeof range !== "string" || !allowedRanges.includes(range)) {
+    return res.status(400).json({
+      error: "range must be 1W, 1M, 3M, 6M, 12M, or ALL",
+    });
+  }
+
+  try {
+    const now = new Date();
+    const weekStart = startOfWeek(now);
+
+    let rangeStart: Date | null = null;
+
+    if (range === "1W") {
+      rangeStart = weekStart;
+    } else if (range === "1M") {
+      rangeStart = subtractMonths(now, 1);
+    } else if (range === "3M") {
+      rangeStart = subtractMonths(now, 3);
+    } else if (range === "6M") {
+      rangeStart = subtractMonths(now, 6);
+    } else if (range === "12M") {
+      rangeStart = subtractMonths(now, 12);
+    } else if (range === "ALL") {
+      const earliest = await prisma.choreCompletion.findFirst({
+        where: {
+          completedAt: { lte: now },
+        },
+        orderBy: {
+          completedAt: "asc",
+        },
+        select: {
+          completedAt: true,
+        },
+      });
+
+      if (earliest !== null) {
+        rangeStart = startOfWeek(earliest.completedAt);
+      } else {
+        rangeStart = weekStart;
+      }
+    }
+
+    if (rangeStart === null) {
+      throw new Error("Unable to determine the range start.");
+    }
+
+    rangeStart.setHours(0, 0, 0, 0);
+
+    const weeks: { weekStart: Date; value: number }[] = [];
+
+    const cursor = startOfWeek(rangeStart);
+
+    while (cursor <= weekStart) {
+      weeks.push({
+        weekStart: new Date(cursor),
+        value: 0,
+      });
+
+      cursor.setDate(cursor.getDate() + 7);
+    }
+
+    const completions = await prisma.choreCompletion.findMany({
+      where: {
+        completedAt: {
+          gte: rangeStart,
+          lte: now,
+        },
+      },
+      select: {
+        completedAt: true,
+        pointsAwarded: true,
+      },
+    });
+
+    for (const completion of completions) {
+      const completionWeek = startOfWeek(completion.completedAt);
+
+      const bucket = weeks.find(
+        (week) => week.weekStart.getTime() === completionWeek.getTime(),
+      );
+
+      if (bucket === undefined) {
+        throw new Error("Completion falls outside the weekly buckets.");
+      }
+
+      if (metric === "points") {
+        bucket.value = bucket.value + completion.pointsAwarded;
+      } else {
+        bucket.value = bucket.value + 1;
+      }
+    }
+
+    res.json({
+      interval,
+      metric,
+      range,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      weekStart,
+      rangeStart,
+      weeks,
+    });
   } catch (err) {
     next(err);
   }
