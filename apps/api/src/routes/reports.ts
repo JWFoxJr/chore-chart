@@ -246,3 +246,88 @@ reportsRouter.get("/reports/trends", async (req, res, next) => {
     next(err);
   }
 });
+
+reportsRouter.get("/reports/missing-chores", async (req, res, next) => {
+  const rawDays = req.query.days;
+
+  if (
+    typeof rawDays !== "string" ||
+    !/^[1-9]\d*$/.test(rawDays) ||
+    !Number.isSafeInteger(Number(rawDays))
+  ) {
+    return res.status(400).json({
+      error: "days must be a positive whole number",
+    });
+  }
+
+  const days = Number(rawDays);
+
+  const now = new Date();
+  const rangeStart = new Date(now);
+
+  rangeStart.setHours(0, 0, 0, 0);
+  rangeStart.setDate(rangeStart.getDate() - (days - 1));
+
+  if (Number.isNaN(rangeStart.getTime())) {
+    return res.status(400).json({
+      error: "days is too large to form a valid date range",
+    });
+  }
+
+  try {
+    const chores = await prisma.chore.findMany({
+      where: {
+        active: true,
+        completions: {
+          none: {
+            completedAt: {
+              gte: rangeStart,
+              lte: now,
+            },
+          },
+        },
+      },
+      orderBy: {
+        title: "asc",
+      },
+      select: {
+        id: true,
+        title: true,
+        completions: {
+          where: {
+            completedAt: {
+              lte: now,
+            },
+          },
+          orderBy: {
+            completedAt: "desc",
+          },
+          take: 1,
+          select: {
+            completedAt: true,
+          },
+        },
+      },
+    });
+
+    const report = [];
+
+    for (const chore of chores) {
+      report.push({
+        id: chore.id,
+        title: chore.title,
+        lastCompletedAt: chore.completions[0]?.completedAt ?? null,
+      });
+    }
+
+    res.json({
+      days,
+      rangeStart,
+      rangeEnd: now,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      chores: report,
+    });
+  } catch (err) {
+    next(err);
+  }
+});

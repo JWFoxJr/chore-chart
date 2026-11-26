@@ -54,6 +54,9 @@ export default function Layout() {
             <NavLink to="/reports/trends" style={linkStyle}>
               Weekly Trends
             </NavLink>
+            <NavLink to="/reports/missing-chores" style={linkStyle}>
+              Missing Chores
+            </NavLink>
           </nav>
         </aside>
 
