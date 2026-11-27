@@ -6,6 +6,7 @@ import CalendarMonthView from "./pages/CalendarMonthView";
 import PointsReportPage from "./pages/PointsReportPage";
 import WeeklyTrendsPage from "./pages/WeeklyTrendsPage";
 import MissingChoresPage from "./pages/MissingChoresPage";
+import StreaksPage from "./pages/StreaksPage.tsx";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
             path="/reports/missing-chores"
             element={<MissingChoresPage />}
           />
+          <Route path="/reports/streaks" element={<StreaksPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

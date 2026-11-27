@@ -15,6 +15,12 @@ function isValidDate(value: string) {
   );
 }
 
+function startOfDay(value: Date) {
+  const start = new Date(value);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
 function startOfWeek(value: Date) {
   const start = new Date(value);
 
@@ -326,6 +332,128 @@ reportsRouter.get("/reports/missing-chores", async (req, res, next) => {
       rangeEnd: now,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       chores: report,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get("/reports/streaks", async (req, res, next) => {
+  const interval = req.query.interval ?? "day";
+
+  if (interval !== "day" && interval !== "week") {
+    return res.status(400).json({
+      error: "interval must be day or week",
+    });
+  }
+
+  try {
+    const now = new Date();
+
+    const users = await prisma.user.findMany({
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        completions: {
+          where: {
+            completedAt: {
+              lte: now,
+            },
+          },
+          orderBy: {
+            completedAt: "asc",
+          },
+          select: {
+            completedAt: true,
+          },
+        },
+      },
+    });
+
+    const report = [];
+
+    let daysPerPeriod = 1;
+    let currentPeriodStart = startOfDay(now);
+
+    if (interval === "week") {
+      daysPerPeriod = 7;
+      currentPeriodStart = startOfWeek(now);
+    }
+
+    const previousPeriodStart = new Date(currentPeriodStart);
+
+    previousPeriodStart.setDate(previousPeriodStart.getDate() - daysPerPeriod);
+
+    for (const user of users) {
+      const periodStarts: Date[] = [];
+      const seenPeriods = new Set<number>();
+
+      for (const completion of user.completions) {
+        let periodStart = startOfDay(completion.completedAt);
+
+        if (interval === "week") {
+          periodStart = startOfWeek(completion.completedAt);
+        }
+
+        const timestamp = periodStart.getTime();
+
+        if (!seenPeriods.has(timestamp)) {
+          seenPeriods.add(timestamp);
+          periodStarts.push(periodStart);
+        }
+      }
+
+      let longestStreak = 0;
+      let runLength = 0;
+      let previousPeriod: Date | null = null;
+
+      for (const periodStart of periodStarts) {
+        if (previousPeriod === null) {
+          runLength = 1;
+        } else {
+          const expectedNext = new Date(previousPeriod);
+
+          expectedNext.setDate(expectedNext.getDate() + daysPerPeriod);
+
+          if (periodStart.getTime() === expectedNext.getTime()) {
+            runLength = runLength + 1;
+          } else {
+            runLength = 1;
+          }
+        }
+
+        longestStreak = Math.max(longestStreak, runLength);
+        previousPeriod = periodStart;
+      }
+
+      let currentStreak = 0;
+
+      if (previousPeriod !== null) {
+        const latestTimestamp = previousPeriod.getTime();
+
+        if (
+          latestTimestamp === currentPeriodStart.getTime() ||
+          latestTimestamp === previousPeriodStart.getTime()
+        ) {
+          currentStreak = runLength;
+        }
+      }
+
+      report.push({
+        userId: user.id,
+        name: user.name,
+        currentStreak,
+        longestStreak,
+      });
+    }
+
+    res.json({
+      interval,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      users: report,
     });
   } catch (err) {
     next(err);
